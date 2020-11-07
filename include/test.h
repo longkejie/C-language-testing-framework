@@ -8,9 +8,9 @@
 #ifndef _TEST_H
 #define _TEST_H
 
-#define TEST(a,b) void a##_##b()
+#define TEST(a,b) __attribute__((constructor)) void a##_##b()
 
-#define EXPECT_EQ(a,b) printf("%s == %s ? %s",#a,#b,a == b ? "TRUE" : "FALSE");
+#define EXPECT_EQ(a,b) printf("%s == %s ? %s\n",#a,#b,a == b ? "TRUE" : "FALSE");
 
 int RUN_ALL_TESTS() ;
 
