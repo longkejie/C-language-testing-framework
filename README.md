@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 
 那我们这就可以开始去实现我们的**TEST**功能了
 
-我们在**./include/test.h**中去实现它。
+我们在./include/test.h中去实现它。
 
 如下：
 
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 
 同样这肯定是一个相应的宏定义
 
-我们在**./include/test.h**中去实现它。
+我们在./include/test.h中去实现它。
 
 如下：
 
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 
 因为它在主函数中**return** **RUN_ALL_TESTS**(),所以我们大胆猜测它是个函数，而且返回值必须为0（主函数中返回值必须为0)。
 
-同样我们在**./include/test.h**中去声明它，在**./src/test.c**中定义它。我们先简单的实现一下他。
+同样我们在./include/test.h中去声明它，在./src/test.c中定义它。我们先简单的实现一下他。
 
 声明如下：
 
@@ -172,7 +172,7 @@ clean:
 
 **meke**一下将会在**bin**目录下生成**test**可执行文件。
 
-我们使用**./bin/test**运行一下该可执行文件
+我们使用./bin/test运行一下该可执行文件
 
 ![image-20201107224230352](https://gitee.com/long_kejie/image/raw/master/image-20201107224230352.png)
 
@@ -210,7 +210,7 @@ __attribute__((constructor))
 
 ![image-20201107225830089](https://gitee.com/long_kejie/image/raw/master/image-20201107225830089.png)
 
-可以看到我们的每组测试用例都被执行了，而且对于**==**判断也都正确。
+可以看到我们的每组测试用例都被执行了，而且对于==判断也都正确。
 
 这样我们就实现了我们测试框架的基础版本。
 
