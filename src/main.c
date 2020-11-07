@@ -6,4 +6,30 @@
  ************************************************************************/
 
 #include<stdio.h>
+#include <test.h>
 
+int add (int x, int y) {
+    return x + y;
+}
+
+TEST (testfunc, add) {
+
+    EXPECT_EQ(add(1,0),1);
+    EXPECT_EQ(add(2,3),5);
+    EXPECT_EQ(add(3,3),5);
+
+}
+
+TEST (testfunc, add2) {
+     
+    EXPECT_EQ(add(3,0),3);
+    EXPECT_EQ(add(2,2),5);
+    EXPECT_EQ(add(3,4),5);
+
+}
+
+
+int main () {
+    
+    return RUN_ALL_TESTS();
+}
