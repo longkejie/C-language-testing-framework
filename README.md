@@ -342,3 +342,85 @@ int RUN_ALL_TESTS() {
 
 至此我们的Mid-level1实现完成。
 
+### C语言测试框架（Mid-level version2）
+
+前面我们实现了我们的Mid-level 1，它能基本完成对于==的判断，以及对每组测试数据进行了分类。
+
+但我们应该不满足于此，首先我们的测试框架是不是太丑了点。我们应该来美化一下它。
+
+并且它只能满足于==的判断？我们还应该完成包括（>=, <=, >, !=, < ）的判断
+
+#### Mid-level 2要求
+
+1.对我们的程序进行美化（包含颜色
+
+2.实现更多的测试种类
+
+#### 实现过程
+
+##### a.输出颜色和格式信息
+
+在C语言中我们要输出彩色字体可以使用以下格式：
+
+**使用格式：样式开始+被修饰字符串+样式结束**
+
+样式开始：\033[参数1；参数2；参数3  其中参数1，参数2，参数3为可选组合
+
+被修饰字符串：需要输出的内容
+
+样式结束：\033[0m
+
+根据以上的格式，我们可以声明一个颜色的宏，将相应的字符串改成具有颜色的字符串。
+
+如下（因为我们的每种颜色只是参数不同，我们可以先定义一个不具体颜色的宏COLOR，然后在每种颜色的宏内，嵌套COLOR，只要我们改变具体的参数即可。这里我们实现红，绿，蓝，黄四种颜色，以及它们的高亮颜色：
+
+```C
+#define COLOR(s,a) "\033["#a"m"s"\033[0m"
+#define COLOR_HL(s,a) "\033[1;"#a"m"s"\033[0m"
+#define RED(s) COLOR(s,31)
+#define RED_HL(s) COLOR_HL(s,31)
+#define GREEN(s) COLOR(s,32)
+#define GREEN_HL(s) COLOR_HL(s,32)
+#define BULE(s) COLOR(s,34)
+#define BULE_HL(s) COLOR_HL(s,34)
+#define YELLOW(s) COLOR(s,33)
+#define YELLOW_HL(s) COLOR_HL(s,33)
+```
+
+这样我们就声明好了对字符串进行四种颜色（以及高亮）渲染的宏。
+
+接下来我们就在RUN_ALL_TESTS()中去实现相应的格式信息输出，以及给它们添加颜色。
+
+修改如下：
+
+```c
+int RUN_ALL_TESTS() {
+    for (int i = 0; i < cnt; ++i) {
+        printf(GREEN("[====RUN====]")RED_HL(" %s\n"),funcarr[i].str);//贴加了相应的颜色
+        funcarr[i].func();
+        printf(GREEN("[==RUN END==]\n"));//贴加了相应的颜色
+    }
+    return 0;
+}
+
+```
+
+**make**然后运行它，结果如下：
+
+![image-20201108112841833](https://gitee.com/long_kejie/image/raw/master/image-20201108112841833.png)
+
+是不是有点意思了。
+
+然后我们还需要对每组测试数据的每个测试数据进行一下格式化，我们是在EXPECT_EQ宏对它进行输出的，这里我们就应该去修改一下该宏的输出。
+
+如下：
+
+```c
+#define EXPECT_EQ(a,b) printf(GREEN("[-----------]")"%s == %s %s\n",#a,#b,a == b ? GREEN_HL("TRUE") : RED_HL("FALSE"));
+```
+
+**make**运行如下：
+
+![image-20201108114338134](https://gitee.com/long_kejie/image/raw/master/image-20201108114338134.png)
+
+可以看到我们的整体框架格式是搭建完成了。

@@ -13,9 +13,9 @@ int cnt;
 
 int RUN_ALL_TESTS() {
     for (int i = 0; i < cnt; ++i) {
-        printf("RUN TEST : %s\n",funcarr[i].str);
+        printf(GREEN("[====RUN====]")RED_HL(" %s\n"),funcarr[i].str);
         funcarr[i].func();
-        printf("RUN END\n");
+        printf(GREEN("[==RUN END==]\n"));
     }
     return 0;
 }
