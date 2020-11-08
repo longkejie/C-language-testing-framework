@@ -2,6 +2,12 @@
 
 **author：longkejie**
 
+**email：1721248012@qq.com**
+
+## 前言：
+
+本项目只是本人学习过程中的一个小的记录，如有错误可联系我更正。（太菜了！）
+
 ## 项目环境
 
 **语言：C**
@@ -107,7 +113,7 @@ int main(int argc, char** argv) {
 
 那我们这就可以开始去实现我们的**TEST**功能了
 
-我们在./include/test.h中去实现它。
+我们在**include/test.h**中去实现它。
 
 如下：
 
@@ -121,7 +127,7 @@ int main(int argc, char** argv) {
 
 同样这肯定是一个相应的宏定义
 
-我们在./include/test.h中去实现它。
+我们在**include/test.h**中去实现它。
 
 如下：
 
@@ -135,7 +141,7 @@ int main(int argc, char** argv) {
 
 因为它在主函数中**return** **RUN_ALL_TESTS**(),所以我们大胆猜测它是个函数，而且返回值必须为0（主函数中返回值必须为0)。
 
-同样我们在./include/test.h中去声明它，在./src/test.c中定义它。我们先简单的实现一下他。
+同样我们在**include/test.h**中去声明它，在**src/test.c**中定义它。我们先简单的实现一下他。
 
 声明如下：
 
@@ -172,7 +178,7 @@ clean:
 
 **meke**一下将会在**bin**目录下生成**test**可执行文件。
 
-我们使用./bin/test运行一下该可执行文件
+我们使用**./bin/test**运行一下该可执行文件
 
 ![image-20201107224230352](https://gitee.com/long_kejie/image/raw/master/image-20201107224230352.png)
 
@@ -210,7 +216,129 @@ __attribute__((constructor))
 
 ![image-20201107225830089](https://gitee.com/long_kejie/image/raw/master/image-20201107225830089.png)
 
-可以看到我们的每组测试用例都被执行了，而且对于==判断也都正确。
+可以看到我们的每组测试用例都被执行了，而且对于**==**判断也都正确。
 
 这样我们就实现了我们测试框架的基础版本。
+
+### C语言测试框架（Mid-level version1）
+
+前面我们实现了一个基本的测试框架。
+
+它能完成对每组测试数据进行测试。
+
+但我们的程序只是单纯的在测试，它并没有对每组测试数据进行分类和统计。这样似乎显得我们的程序有点笨重。
+
+并且我们的**RUA_ALL_TESTS**()函数并没有实现任何功能。
+
+#### Mid-level 1要求
+
+1.我们应该实现对每组测试数据进行分类。
+
+2.我们应该优化我们的**RUN_ALL_TESTS**()函数，在该函数中调用我们的所有测试数据，并输出结果。
+
+#### 实现过程
+
+##### a.对每组测试数据进行分类
+
+对于这个要求，我们可以利用C语言当中的一个结构体来保存我们的每组测试数据函数的函数指针变量，以及函数名字变量。
+
+我们在**include/test.h**中去定义该结构体如下：
+
+```c
+typedef void(*TestFuncT)();//定义一个函数指针类型，方便保存每个测试函数的信息。
+
+typedef struct Function{
+    TestFuncT func;
+    const char * str;
+}Function;//定义一个Function结构体类型，来保存我们相应的数据。
+
+```
+
+然后我们就应该去实现一个函数，在每次调用TEST宏的时候，都将该测试数据保存起来，**这里我们先用一个结构体数组来对我们的每组测试数据进行保存**
+
+我们在**include/test.h**中对该数组进行声明，使用**extern**即可
+
+```c
+extern Function funcarr[100];
+```
+
+这里我们定义了我们的数组大小为100，这样的设定似乎有点臃肿，它只能支持100组测试数据？what？。这里我们暂且不纠结，我们先来实现我们**Mid-level**的基本要求。
+
+现在我们就需要来实现这一个将我们的测试数据保存到结构体数组中的函数了。
+
+首先该函数可以没有返回类型，但他必须拥有我们每组测试数据的信息（函数指针，函数名称）。
+
+我们先在include/test.h中来声明它：
+
+```c
+void add_function(TestFuncT , const char* );
+```
+
+然后我们在src/test.c去实现它：
+
+首先我们要在**test.c**中定义该结构体数组，以及一个**int**类型的**cnt**（初始为0）来索引我们的下标。
+
+```c
+Funticon funcarr[100];
+int cnt;//都是全局变量，初始值为0
+
+void add_function(TestFuncT func, const char* str) {
+    funcarr[cnt].func = func;
+    funcarr[cnt].str = strdup(str);
+    cnt++;
+}
+
+```
+
+接下来我们就应该想，我们什么时候去调用该函数呢？是不是应该联想到我们上面的TEST宏，我们每次测试的时候都会调用它，这就是我们将该组测试信息添加到结构体数组中保存的最佳时机。
+
+我们修改我们的TEST宏如下：
+
+```c
+#define TEST(a,b)\
+    void a##_##b();\
+        __attribute__((constructor)) void add##_##a##_##b() { add_function(a##_##b,#a"."#b);}\
+    void a##_##b()
+```
+
+大体的意思是，先声明我们的每组测试函数，然后调用add_function函数将该测试函数添加到结构体数组（该操作是在主函数前执行的），然后再定义我们的测试函数。
+
+这样我们就对每组测试数据分好类了。
+
+
+
+##### b.优化RUN_ALL_TESTS()
+
+前面我们对每组测试数据都分好类了，这里我们需要实现的就是调用所用测试数据，并将它们的结果输出。
+
+实现如下：
+
+```c
+int RUN_ALL_TESTS() {
+    for (int i = 0; i < cnt; ++i) {
+        printf("RUN TEST : %s\n",funcarr[i].str);
+        funcarr[i].func();
+        printf("RUN END\n");
+    }
+    return 0;
+}
+```
+
+我们一看就知道它干了什么事。
+
+现在我们**make**一下，然后运行它。
+
+结果如下：
+
+![image-20201108100911250](https://gitee.com/long_kejie/image/raw/master/image-20201108100911250.png)
+
+可以看到它对每组测试数据都分好了类，并且在我们调用了**RUN_ALL_TESTS**()它才进行输出
+
+如果我们在主函数中，不调用它，结果将如下：
+
+![image-20201108101241841](https://gitee.com/long_kejie/image/raw/master/image-20201108101241841.png)
+
+什么也没发生。
+
+至此我们的Mid-level1实现完成。
 
