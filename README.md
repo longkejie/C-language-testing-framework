@@ -424,3 +424,42 @@ int RUN_ALL_TESTS() {
 ![image-20201108114338134](https://gitee.com/long_kejie/image/raw/master/image-20201108114338134.png)
 
 可以看到我们的整体框架格式是搭建完成了。
+
+##### b.完善EXPECT宏
+
+上面的整体框架我们是搭建好了，那么现在我们就需要来完善我们的功能了。
+
+首先，我们的测试框架只能对EXPECT_EQ进行测试（它只能判断两个表达式是否相等），我们需要多加一点功能，使他能做的不只是判等。
+
+我们可以实现一个EXPECT宏，它传入两个表达式，以及这两个表达式之间进行比较的字符串，如（==，<=,等等）。
+
+然后对于每个测试，我们只要改变它的符号即可。
+
+总体实现如下：
+
+```c
+/*EXPECT宏，实现对不同comp进行判断*/
+#define EXPECT(a,b,comp){\
+    printf(GREEN("[-----------]")"%s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                        }
+/*嵌套一个EXPECT宏，传入不同的COMP*/
+#define EXPECT_EQ(a,b) EXPECT(a,b,==)
+#define EXPECT_NE(a,b) EXPECT(a,b,!=)
+#define EXPECT_GE(a,b) EXPECT(a,b,>=)
+#define EXPECT_LE(a,b) EXPECT(a,b,<=)
+#define EXPECT_GT(a,b) EXPECT(a,b,>)
+#define EXPECT_LT(a,b) EXPECT(a,b,<)
+```
+
+
+
+接下来我们读我们完善后的EXPECT宏进行测试。我们修改我们的main.c ,使它包含多种测试种类。
+
+然后**make**后，运行观看结果如下：
+
+![image-20201108120911145](https://gitee.com/long_kejie/image/raw/master/image-20201108120911145.png)
+
+这样我们的EXPECT宏就基本完善好了。
+
+至此我完成了我们的Mid - level version2。
+

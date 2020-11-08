@@ -17,7 +17,9 @@ TEST (testfunc, add) {
     EXPECT_EQ(add(1,0),1);
     EXPECT_EQ(add(2,3),5);
     EXPECT_EQ(add(3,3),5);
-
+    EXPECT_GT(add(3,3),5);
+    EXPECT_LE(add(1,0),1);
+    EXPECT_LT(add(3,4),5);
 }
 
 TEST (testfunc, add2) {
@@ -25,6 +27,8 @@ TEST (testfunc, add2) {
     EXPECT_EQ(add(3,0),3);
     EXPECT_EQ(add(2,2),5);
     EXPECT_EQ(add(3,4),5);
+    EXPECT_GE(add(3,4),8);
+    EXPECT_NE(add(3,3),6);
 
 }
 

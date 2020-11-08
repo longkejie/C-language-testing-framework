@@ -25,7 +25,16 @@
         __attribute__((constructor)) void add##_##a##_##b() { add_function(a##_##b,#a"."#b);}\
     void a##_##b()
 
-#define EXPECT_EQ(a,b) printf(GREEN("[-----------]")"%s == %s %s\n",#a,#b,a == b ? GREEN_HL("TRUE") : RED_HL("FALSE"));
+#define EXPECT(a,b,comp){\
+    printf(GREEN("[-----------]")"%s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                        }
+#define EXPECT_EQ(a,b) EXPECT(a,b,==)
+#define EXPECT_NE(a,b) EXPECT(a,b,!=)
+#define EXPECT_GE(a,b) EXPECT(a,b,>=)
+#define EXPECT_LE(a,b) EXPECT(a,b,<=)
+#define EXPECT_GT(a,b) EXPECT(a,b,>)
+#define EXPECT_LT(a,b) EXPECT(a,b,<)
+
 
 int RUN_ALL_TESTS() ;
 
