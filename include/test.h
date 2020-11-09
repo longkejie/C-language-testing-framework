@@ -47,11 +47,18 @@
                              printf(YELLOW_HL("\n              %s:%d:failure\n"),__FILE__,__LINE__);\
                              printf(YELLOW_HL("                   expect : %s %s %s\n"),#a, #comp, #b);\
                              printf(YELLOW_HL("                   actual : "));\
-                             PUT(a);printf(YELLOW_HL(" vs "));PUT(b);printf(YELLOW_HL("\n\n"));\
-                        } else {my_testnum.success++;\
-                        }my_testnum.total++;\
-    printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,_a comp _b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                             PUT(_a);\
+                             printf(YELLOW_HL(" vs "));\
+                             PUT(_b);\
+                             printf(YELLOW_HL("\n\n"));\
+                        } else {\
+                             my_testnum.success++;\
+                        }\
+                        my_testnum.total++;\
+     printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,_a comp _b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
                         }
+
+
 #define EXPECT_EQ(a,b) EXPECT(a,b,==)
 #define EXPECT_NE(a,b) EXPECT(a,b,!=)
 #define EXPECT_GE(a,b) EXPECT(a,b,>=)
