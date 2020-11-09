@@ -8,9 +8,10 @@
 #include<stdio.h>
 #include <test.h>
 
-int add (int x, int y) {
+double add (double x, double y) {
     return x + y;
 }
+
 
 TEST (testfunc, add) {
 
@@ -26,12 +27,12 @@ TEST (testfunc, add2) {
      
     EXPECT_EQ(add(3,0),3);
     EXPECT_EQ(add(2,2),5);
-    EXPECT_EQ(add(3,4),5);
-    EXPECT_GE(add(3,4),8);
-    EXPECT_NE(add(3,3),6);
 
 }
-
+TEST (testfunc, add3) {
+    EXPECT_EQ(add(3,4),7);
+    EXPECT_LE(add(1,0),2);
+}
 
 int main () {
     

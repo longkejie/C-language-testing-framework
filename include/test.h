@@ -20,13 +20,38 @@
 #define YELLOW_HL(s) COLOR_HL(s,33)
 
 
+#define Type(a) _Generic((a),\
+                         int : "%d",\
+                         char : "%c",\
+                         double : "%lf",\
+                         const char * : "%s",\
+                         float : "%f"\
+                        )
+
+
+#define PUT(a) {\
+                char temp[80];\
+                sprintf(temp,YELLOW_HL("%s"),Type(a));\
+                printf(temp,a);\
+}
+
 #define TEST(a,b)\
     void a##_##b();\
         __attribute__((constructor)) void add##_##a##_##b() { add_function(a##_##b,#a"."#b);}\
     void a##_##b()
 
 #define EXPECT(a,b,comp){\
-    printf(GREEN("[-----------]")"%s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                         __typeof(a) _a = (a);\
+                         __typeof(b) _b = (b);\
+                         if (!(_a comp _b)) {\
+                             printf(YELLOW_HL("\n              %s:%d:failure\n"),__FILE__,__LINE__);\
+                             printf(YELLOW_HL("                   expect : %s %s %s\n"),#a, #comp, #b);\
+                             printf(YELLOW_HL("                   actual : "));\
+                             PUT(a);printf(YELLOW_HL(" vs "));PUT(b);printf(YELLOW_HL("\n\n"));\
+                         }\
+                         my_testnum.total++;\
+                         if (_a comp _b ) my_testnum.success++;\
+    printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,_a comp _b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
                         }
 #define EXPECT_EQ(a,b) EXPECT(a,b,==)
 #define EXPECT_NE(a,b) EXPECT(a,b,!=)
@@ -44,6 +69,13 @@ typedef struct Function{
     TestFuncT func;
     const char * str;
 }Function;
+
+typedef struct testnum{
+    int total;
+    int success;
+}TestNum;
+
+extern TestNum my_testnum;
 
 extern Function funcarr[100];
 

@@ -463,3 +463,233 @@ int RUN_ALL_TESTS() {
 
 至此我完成了我们的Mid - level version2。
 
+### C语言测试框架（Top version）
+
+在Mid level中，我们搭建好了我们的基本框架，贴加了字体颜色以及格式化输出。最后我们还完善了我们的EXPECT宏，使它能完成更多的功能。
+
+现在我们要来更加完善一下我们的程序，修改一些不那么好的设计，以及寻找相应的bug并修改它。
+
+#### Top version要求
+
+1.统计每组测试数据的总测试量，以及其中测试正确的数量，打印出相应信息**（总数量，成功的数量，成功百分比）**
+
+2.打印错误提示信息（对每组测试数据中测试错误的相关测试的信息的打印）
+
+3.优化相应可能会导致错误的设计
+
+#### 实现过程
+
+##### a.对每组测试数据进行统计并输出
+
+这个我们可以利用一个结构体，该结构体包含两个信息（一组测试数据的测试数量以及它正确的数量）
+
+我们在**include/test.h**中声明并定义如下：
+
+```c#
+typedef struct testnum{
+    int total;
+    int success;
+}TestNum;
+
+extern TestNum my_testnum;
+
+```
+
+然后我们就可以利用它来统计了，我们应该在什么时候进行统计呢？我们每组测试都是对EXPECT宏的调用，所以我们每次调用EXPECT宏的时候，都将改组测试数据的**total总量**加一，如果测试正确，**success**加一。
+
+EXPECT宏修改如下：
+
+```c
+#define EXPECT(a,b,comp){\
+                         my_testnum.total++;\
+                         if (a comp b ) my_testnum.success++;\
+    printf(GREEN("[-----------]")"%s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                        }
+```
+
+值得注意的是，my_testnum这个变量必须在**src/test.c**中去定义它，我们前面的**extern**只是对它进行一个声明。
+
+这样我们就统计好我们的相应信息了，就下来我们就在**RUN_ALL_TESTS**()函数中对我们的统计信息进行输出。
+
+RUN_ALL_TESTS()修改如下：
+
+```c
+int RUN_ALL_TESTS() {
+    for (int i = 0; i < cnt; ++i) {
+        printf(GREEN("[====RUN====]")RED_HL(" %s\n"),funcarr[i].str);
+        my_testnum.total = 0, my_testnum.success = 0;//清零以便后续测试组测试数据的统计
+        funcarr[i].func();
+        printf(GREEN("[  "));
+        if (my_testnum.total == my_testnum.success) {
+            printf(BULE_HL("%6.2lf%%"),100.0);//全部正确，输入百分百（为蓝色）
+            printf(GREEN("  ]"));
+            printf(" total : %d success : %d\n",my_testnum.total,my_testnum.success);
+        }else {
+            printf(RED_HL("%6.2lf%%"),(double)my_testnum.success/my_testnum.total * 100.0);//有错误的话，输入的为红色
+            printf(GREEN("  ]"));
+            printf(" total : %d success : %d\n",my_testnum.total,my_testnum.success);
+        }
+    }
+    return 0;
+}
+
+```
+
+展示结果如下：
+
+<img src="https://gitee.com/long_kejie/image/raw/master/image-20201109161016926.png" alt="image-20201109161016926" style="zoom:67%;" />
+
+这样我们就完成了对每组测试数据的统计。
+
+##### b.打印错误提示信息
+
+我们的错误信息中，要包含错误所在文件，以及行数，以及错误提示。
+
+我们先来实现打印错误所在的文件，和行数。
+
+这里我们使用C的两个内置宏即可
+
+在我们的EXPECT宏最前面加一个错误判断即可
+
+如下:
+
+```c
+#define EXPECT(a,b,comp){\
+                         if (!(a comp b)) printf(YELLOW_HL("\n              %s:%d:failure\n\n"),__FILE__,__LINE__);\
+                         my_testnum.total++;\
+                         if (a comp b ) my_testnum.success++;\
+    printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                        }
+
+```
+
+这样我们就可以打印出我们测试错误的信息所在的文件以及行数，成果如下：
+
+<img src="https://gitee.com/long_kejie/image/raw/master/image-20201109162256229.png" alt="image-20201109162256229" style="zoom:67%;" />
+
+接下来我们还需打印相关的错误提示信息，这对我们的测试框架特别重要，可以提示我们如何去修改我们错误。
+
+我们的错误提示信息如何设置才能通俗易懂呢？
+
+首先它需要一个期盼值，然后再输出我们的实际情况，这样两个一对比，就能见分晓。
+
+我们先来输出我们的期盼值，这不难，我们是期盼我们的测试是正确的，所以将我们的测试输出即可。
+
+```c
+#define EXPECT(a,b,comp){\
+                         if (!(a comp b)) {\
+                             printf(YELLOW_HL("\n              %s:%d:failure\n"),__FILE__,__LINE__);\
+  \\相关期盼值的打印          	printf(YELLOW_HL("                   expect : %s %s %s\n\n"),#a, #comp, #b);\
+                         }\
+                         my_testnum.total++;\
+                         if (a comp b ) my_testnum.success++;\
+    printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,a comp b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
+                        }
+
+```
+
+结果如下：
+
+<img src="https://gitee.com/long_kejie/image/raw/master/image-20201109163238101.png" alt="image-20201109163238101" style="zoom:67%;" />
+
+对于第一个错误，我们实际上是期盼add(3,3) == 5的 ，但是实际上不是的，我们接下来应该将我们的实际情况打印出来。
+
+接下来就是实现我们这个功能的最难部分了，我们应该如何获得我们测试数据的类型呢。
+
+接下来就是我们的泛型编程的用处了，C语言中有一个**_Generic**((a),....)关键字，它能根据表达式a的类型。映射出我们想要的表达式。
+
+官网解释如下：
+
+![image-20201109163949643](https://gitee.com/long_kejie/image/raw/master/image-20201109163949643.png)
+
+可以了解到的是，它能根据我们控制表达式的类型，获取到关联列表中相应的表达式。
+
+有了这个，我们的问题就迎刃而解了。
+
+我们可以定义一个Type宏，可以通过我们传入进去的变量的相应类型得到相应表达式，我们获取到的表达式内容应该是一个字符串,来控制我们printf输出，如（int对应的是“%d”，double对应的是“%lf”）
+
+Type宏定义如下：
+
+```c
+#define Type(a) _Generic((a),\
+                         int : "%d",\
+                         char : "%c",\
+                         double : "%lf",\
+                         const char * : "%s",\
+                         long long : "%lld",\
+                         char * : "%s",\
+                         float : "%f"\
+                        )
+```
+
+接下來我们就可以通过Type(a) 来获得相应的类型了。
+
+值得注意的是，**_Generic**返回的是一个表达式，不是一个字符串，我们不能直接用来作为printf的控制格式字符串，我们可以通过
+
+**sprintf**来将该表达式的内容读入到相应的字符串， 然后利用该字符串进行输出。
+
+我们可以定义一个PUT宏，来原子性的完成我们下面想要的操作。
+
+1.获取变量a所对应的表达式
+
+2.将该表达式的内容（字符串）输入到我们定义的一个临时变量temp中存起来
+
+3.利用temp进行格式化输出。
+
+代码如下：
+
+```c
+#define PUT(a) {\
+                char temp[80];\
+                sprintf(temp,YELLOW_HL("%s"),Type(a));\
+                printf(temp,a);\
+}
+```
+
+下面我们就可以在我们的EXPECT宏中调用PUT宏来进行相应的输出了。
+
+```c
+printf(YELLOW_HL("                   actual : "));\
+PUT(a);printf(YELLOW_HL(" vs "));PUT(b);printf(YELLOW_HL("\n\n"));\
+
+```
+
+打印结果如下：
+
+<img src="https://gitee.com/long_kejie/image/raw/master/image-20201109171700447.png" alt="image-20201109171700447" style="zoom:67%;" />
+
+对应第一个错误，我们期望add(3,3) == 5
+
+实际是 6 == 5，这肯定是错误的。
+
+我们将这两边的类型改一下，看是否能输出正确。
+
+<img src="https://gitee.com/long_kejie/image/raw/master/image-20201109171900240.png" alt="image-20201109171900240" style="zoom:67%;" />
+
+可以看到它能识别出double类型的表达式。
+
+这样我们的打印错误提示信息就完成了。
+
+##### c.优化Top version
+
+在我们的EXPECT宏中，我们是直接利用a comp b进行比较，这可能在宏的展开过程中由于符号的优先级问题出现问题，所以我们需要将两个表达式a，b封装起来，先计算再比较。
+
+改动如下：
+
+```c
+#define EXPECT(a,b,comp){\
+                         __typeof(a) _a = (a);\
+                         __typeof(b) _b = (b);\
+                         ......................\
+                         ......................\
+                         ......................\
+                         ......................\
+                         }
+```
+
+...为我们后续省略的内容，详细可见前面，这里我们主要实现的是，利用_a来封装a, _b来封装b，后续的所有比较操作，都是它两在进行，这样就不会出现任何因为优先级的问题而发生的错误。
+
+至此我们就实现了我们的Top version。
+
+
+
