@@ -48,9 +48,8 @@
                              printf(YELLOW_HL("                   expect : %s %s %s\n"),#a, #comp, #b);\
                              printf(YELLOW_HL("                   actual : "));\
                              PUT(a);printf(YELLOW_HL(" vs "));PUT(b);printf(YELLOW_HL("\n\n"));\
-                         }\
-                         my_testnum.total++;\
-                         if (_a comp _b ) my_testnum.success++;\
+                        } else {my_testnum.success++;\
+                        }my_testnum.total++;\
     printf(GREEN("[-----------]")" %s %s %s %s\n",#a,#comp,#b,_a comp _b ? GREEN_HL("TRUE") : RED_HL("FALSE"));\
                         }
 #define EXPECT_EQ(a,b) EXPECT(a,b,==)
