@@ -4,9 +4,9 @@ all:lib/main.o lib/test.o
 	gcc lib/main.o lib/test.o -o bin/test
 
 lib/main.o:include/test.h src/main.c
-	gcc -c -I ./include/ src/main.c -o lib/main.o
+	gcc -c -I ./include src/main.c -o lib/main.o
 
-lib/test.o:include/test.h src/test.c
+lib/test.o:include/test.h src/test.c include/linklist.h
 	gcc -c -I./include src/test.c -o lib/test.o
 
 clean:

@@ -691,5 +691,117 @@ PUT(a);printf(YELLOW_HL(" vs "));PUT(b);printf(YELLOW_HL("\n\n"));\
 
 至此我们就实现了我们的Top version。
 
+### C语言测试框架（Final version）
 
+截止现在我们将我们的功能基本完成了，以及进行了优化。那我们怎么还有个最终版本呢？**（Final version)**
 
+在刚开始设计框架的时候，为了简便，我们对我们的每组测试样例用数组保存起来了。数组开了100的大小。
+
+你这是可能就会想到当我们的测试样例增加到100组以上时怎么办呢？我们的程序这时就显得有点无能为力了。
+
+那我们应该如何来实现动态添加测试样例呢？
+
+我们可以使用支持动态扩容的顺序表，以及链表来实现。
+
+但是我们的顺序表每次扩容的时候都要进行大量的数组数据迁移，不能达到灵活的进行添加测试样例的功能。
+
+鉴于上述原因，我们使用链表来实现
+
+#### Finished version要求
+
+a.使用链表来完成信息的存储，并在使用后有效的释放内存
+
+#### 实现过程
+
+##### a.建立链表外骨骼
+
+我们首先建立一个和链表相关的头文件include/linklist.h，定义一个链表结构体。
+
+如下：
+
+```c
+struct LinkNode {
+    struct LinkNode *next;
+};
+```
+
+它只包含一个指向下一节点的next指针域。
+
+然后我们就需要在我们Function结构体中去定义一个**struct LinkNode** 类型的变量p，用来寻求每个Function类型变量（得到相应的测试信息）所在的地址。
+
+如下：
+
+```c
+typedef struct Function{
+    TestFuncT func;
+    const char * str;
+    struct LinkNode p;
+}Function;
+```
+
+我们每次可以通过p的地址以及偏移量得到相应的结构体所在的首地址，然后就可以索引到func函数，以及str函数的名字。
+
+然后我们就需要在我们的include/linklist.h中去定义相应的宏来实现寻找首地址的功能。
+
+如下：
+
+```c
+#define offset(T,name) (long long)(&(((T*)(NULL)) -> name)) //得到结构体中相应变量的偏移量。
+
+#define Head(p,T)  (T*)((void *)(p) - offset(T,p)) //得到T类型结构体的首地址
+
+```
+
+现在我们的链表外骨骼就搭建起来了。
+
+##### b.利用链表保存相应数据
+
+我们首先在我们的src/test.c中定义一个Function类型的全局变量func_head（不保存然后信息）,以及一个指向链表尾结点的指针（Function *）类型的全局变量func_tail（初始化为func_head的地址）。
+
+然后在我们的add_function函数定义如下：
+
+```c
+void add_function(TestFuncT func, const char* str) {
+    Function *temp = (Function *)calloc(1,sizeof(Function));
+    temp -> func = func;
+    temp -> str = strdup(str);
+    func_tail -> p.next = &(temp -> p);
+    func_tail = temp;
+}
+
+```
+
+至此我们的所有测试信息都保存在链表中了，因为链表是支持扩容的，只要我们的系统内存还够，我们的测试信息就能一直被保存起来。
+
+##### c.在RUN_ALL_TESTS()函数中，利用链表进行信息的输出。
+
+如下：
+中间的内容没有改变，就省略了。
+
+主要改变的是我们每次都是地址去访问相应的信息了，不是简单的数组直接访问了。
+
+```c
+int RUN_ALL_TESTS() {
+    for (struct LinkNode *p = func_head.p.next;p != NULL;p = p->next) {
+        Function *func = Head(p,Function);
+        printf(GREEN("[====RUN====]")RED_HL(" %s\n"),func -> str);
+        my_testnum.total = 0, my_testnum.success = 0;//清零以便后续测试组测试数据的统计
+        func -> func();
+        ..........................................................................
+         ..........................................................................
+            ..........................................................................
+            ..........................................................................
+    return 0;
+}
+
+```
+
+至此我们的C语言的简易测试框架就完成了。
+
+但我们的设计肯定不可能在此止步，后续还会进行一步步的优化，这里我就不详谈了。
+
+如果本说明有什么技术上不懂的（第一次写这种整个项目的说明文档，可能写的比较简陋！！！）
+
+可邮箱联系。
+
+联系方式详见本文开头。

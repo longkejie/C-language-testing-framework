@@ -7,7 +7,7 @@
 
 #ifndef _TEST_H
 #define _TEST_H
-
+#include <linklist.h>
 #define COLOR(s,a) "\033["#a"m"s"\033[0m"
 #define COLOR_HL(s,a) "\033[1;"#a"m"s"\033[0m"
 #define RED(s) COLOR(s,31)
@@ -74,6 +74,7 @@ typedef void(*TestFuncT)();
 typedef struct Function{
     TestFuncT func;
     const char * str;
+    struct LinkNode p;
 }Function;
 
 typedef struct testnum{
