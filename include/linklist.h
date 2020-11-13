@@ -11,7 +11,7 @@
 
 #define offset(T,name) (long long)(&(((T*)(NULL)) -> name)) 
 
-#define Head(p,T)  (T*)((long long)(void *)(p) - offset(T,p))
+#define Head(p,T)  (T*)((char*)(p) - offset(T,p))
 
 struct LinkNode {
     struct LinkNode *next;
